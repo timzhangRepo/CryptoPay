@@ -21,6 +21,7 @@ import org.spongycastle.cms.CMSProcessableByteArray;
 import org.spongycastle.cms.CMSSignedDataGenerator;
 import org.spongycastle.cms.CMSTypedData;
 import org.spongycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
+import org.spongycastle.crypto.digests.KeccakDigest;
 import org.spongycastle.jce.ECNamedCurveTable;
 import org.spongycastle.jce.interfaces.ECPrivateKey;
 import org.spongycastle.jce.provider.BouncyCastleProvider;
@@ -35,10 +36,18 @@ import org.spongycastle.util.encoders.Hex;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.Security;
 import java.security.Signature;
+import java.security.spec.ECPoint;
+import java.security.spec.ECPublicKeySpec;
 import java.security.spec.KeySpec;
+import java.security.spec.X509EncodedKeySpec;
 
 import javax.crypto.SecretKey;
 
@@ -47,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     MainActivity me = this;
 
 
-    public void onTestOneClick(View v) {
+    public void GetMyBalance(View v) {
         String url = "https://api.blockcypher.com/v1/beth/test/addrs/";
         JsonObjectRequest r = new JsonObjectRequest(Request.Method.GET, url + address, null, new Response.Listener<JSONObject>() {
             @Override
@@ -67,10 +76,28 @@ public class MainActivity extends AppCompatActivity {
         queue.add(r);
     }
 
-    private String privatekey, publickey, address;
-    private String outaddress = "b26a0e6e593f33c7e177a55b57072b48f8b0c560";
+    private String privatekey;
+    private String publickey;
+    private String address;
+    private String outaddress = "84c8dfc2e8227af884f97e95325253e9d4b60bdb";
 
-    public void onTestTwoClick(View v) {
+    public void GetNewWallet(View v) {
+//        KeyPairGenerator kg = null;
+//        try {
+//            kg = KeyPairGenerator.getInstance("EC");
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        }
+//        kg.initialize(256, new SecureRandom());
+//        KeyPair kp = kg.generateKeyPair();
+//        privatekey = kp.getPrivate();
+//        publickey = kp.getPublic();
+//        KeccakDigest kd = new KeccakDigest(256);
+//        kd.update(publickey.getEncoded(), 0, publickey.getEncoded().length);
+//        byte addr[] = new byte[256];
+//        kd.doFinal(addr, 0);
+//        address = new String(Hex.encode(addr, 12,20));
+//        ((TextView)findViewById(R.id.addresstext)).setText(address);
         String url = "https://api.blockcypher.com/v1/beth/test/addrs?token=e7b00d26dbca419ba5b9499f4dea638a";
         JsonObjectRequest r = new JsonObjectRequest(Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -165,12 +192,18 @@ public class MainActivity extends AppCompatActivity {
                     byte[] pkb = Hex.decode(privatekey);
                     Security.addProvider(new BouncyCastleProvider());
                     ECPrivateKeySpec ks = new ECPrivateKeySpec(new BigInteger(pkb), (ECParameterSpec)ECNamedCurveTable.getParameterSpec("secp256k1"));
-                    KeyFactory kf = KeyFactory.getInstance("EC");
+                    KeyFactory kf = KeyFactory.getInstance("EC", new BouncyCastleProvider());
+//                    PublicKey puk = kf.generatePublic(new X509EncodedKeySpec(publickey.getBytes()));
                     PrivateKey pk = kf.generatePrivate(ks);
                     Signature sig = Signature.getInstance("NONEwithECDSA");
+                    ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256k1");
+                    sig.setParameter(new ECParameterSpec(spec.getCurve(), spec.getG(), spec.getN(), spec.getH()));
                     sig.initSign(pk);
                     sig.update(tosignbytes);
                     tosign = new String(Hex.encode(sig.sign()));
+//                    sig.initVerify(puk);
+//                    sig.update(tosignbytes);
+//                    sig.verify(tosign.getBytes());
                     response.put("signatures", new JSONArray(new Object[] {tosign}));
 
                     String url = "https://api.blockcypher.com/v1/beth/test/txs/send?token=e7b00d26dbca419ba5b9499f4dea638a";
