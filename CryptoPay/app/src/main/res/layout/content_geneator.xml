@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:id="@+id/rl"
+    android:padding="10dp"
+
+    android:background="#aac4a4"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.bitcryptopay.cryptopay.geneator"
+    tools:showIn="@layout/activity_geneator">
+
+    <ImageView
+        android:id="@+id/iv"
+        android:layout_width="221dp"
+        android:layout_height="221dp"
+        android:layout_margin="10dp"
+        android:padding="5dp"
+        android:src="@drawable/ic_launcher_background"
+        tools:layout_editor_absoluteX="72dp"
+        tools:layout_editor_absoluteY="110dp" />
+    /ImageView>
+</android.support.constraint.ConstraintLayout>
