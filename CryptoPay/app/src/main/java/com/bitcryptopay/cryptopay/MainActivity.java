@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onTestFiveClick(View v) {
-        final String url = "https://api.blockcypher.com/v1/beth/test/txs/new?token=e7b00d26dbca419ba5b9499f4dea638a";
+        String url = "https://api.blockcypher.com/v1/beth/test/txs/new?token=e7b00d26dbca419ba5b9499f4dea638a";
         JSONObject request = new JSONObject();
         JSONObject inputs = new JSONObject();
         JSONObject outputs = new JSONObject();
@@ -158,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 try {
+
+                    //sign string
                     String tosign = response.getJSONArray("tosign").getString(0);
                     byte[] tosignbytes = Hex.decode(tosign);
                     byte[] pkb = Hex.decode(privatekey);
@@ -165,11 +167,13 @@ public class MainActivity extends AppCompatActivity {
                     ECPrivateKeySpec ks = new ECPrivateKeySpec(new BigInteger(pkb), (ECParameterSpec)ECNamedCurveTable.getParameterSpec("secp256k1"));
                     KeyFactory kf = KeyFactory.getInstance("EC");
                     PrivateKey pk = kf.generatePrivate(ks);
-                    Signature sig = Signature.getInstance("ECDSA");
+                    Signature sig = Signature.getInstance("NONEwithECDSA");
                     sig.initSign(pk);
                     sig.update(tosignbytes);
                     tosign = new String(Hex.encode(sig.sign()));
                     response.put("signatures", new JSONArray(new Object[] {tosign}));
+
+                    String url = "https://api.blockcypher.com/v1/beth/test/txs/send?token=e7b00d26dbca419ba5b9499f4dea638a";
                     JsonObjectRequest v = new JsonObjectRequest(Request.Method.POST, url, response, new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
@@ -184,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             ((TextView)findViewById(R.id.sendconfirmtext)).setText("error second response");
+
                         }
                     });
                     queue.add(v);
